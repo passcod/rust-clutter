@@ -1,6 +1,7 @@
 use libc;
 use std;
 
+#[repr(C)]
 pub struct Color {
   pub opaque: *mut libc::c_void
 }

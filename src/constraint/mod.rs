@@ -1,10 +1,10 @@
 use libc;
-use std;
 use super::actor::Actor;
 use super::actor::ActorMeta;
 
 pub mod bind;
 
+#[repr(C)]
 pub struct ConstraintRef {
   opaque: *mut libc::c_void
 }
@@ -26,6 +26,7 @@ impl ActorMeta for ConstraintRef {
   }
 }
 
+#[repr(C)]
 pub struct BindConstraintRef {
   opaque: *mut libc::c_void
 }

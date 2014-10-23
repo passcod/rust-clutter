@@ -3,6 +3,7 @@ use std;
 use super::actor::Actor;
 use super::content::Content;
 
+#[repr(C)]
 pub struct TextRef {
   opaque: *mut libc::c_void
 }
@@ -189,6 +190,7 @@ extern {
   fn clutter_text_get_selected_text_color(self_value: *mut libc::c_void) -> super::color::Color;
 }
 
+#[repr(C)]
 pub struct BufferRef {
   opaque: *mut libc::c_void
 }
@@ -227,7 +229,7 @@ pub trait Buffer {
     }
   }
 
-  fn get_bytes(&mut self) -> uint {
+  fn get_bytes(&mut self) -> u32 {
     unsafe {
       let foreign_result = clutter_text_buffer_get_bytes(self.as_buffer());
       return foreign_result;
@@ -296,7 +298,7 @@ extern {
   fn clutter_text_buffer_new_with_text(text: *mut libc::c_char, utf8_len: i32) -> BufferRef;
   fn clutter_text_buffer_set_text(self_value: *mut libc::c_void, text: *mut libc::c_char, utf8_len: i32);
   fn clutter_text_buffer_get_text(self_value: *mut libc::c_void) -> *mut i8;
-  fn clutter_text_buffer_get_bytes(self_value: *mut libc::c_void) -> uint;
+  fn clutter_text_buffer_get_bytes(self_value: *mut libc::c_void) -> libc::c_uint;
   fn clutter_text_buffer_get_length(self_value: *mut libc::c_void) -> i32;
   fn clutter_text_buffer_set_max_length(self_value: *mut libc::c_void, max_length: i32);
   fn clutter_text_buffer_get_max_length(self_value: *mut libc::c_void) -> i32;

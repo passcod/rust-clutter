@@ -1,6 +1,7 @@
 use libc;
 use std;
 
+#[repr(C)]
 pub struct ContentRef {
   opaque: *mut libc::c_void
 }

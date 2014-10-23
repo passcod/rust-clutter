@@ -3,6 +3,7 @@ use std;
 use cairo;
 use super::content::Content;
 
+#[repr(C)]
 pub struct CanvasRef {
   opaque: *mut libc::c_void
 }
@@ -53,7 +54,7 @@ extern "C" fn handler_for_on_draw(canvas: *mut libc::c_void, cairo: *mut libc::c
     let foreign_result = (*handler)(&mut canvas_r, &mut cairo_r, width, height);
     std::mem::forget(canvas_r);
     std::mem::forget(cairo_r);
-    return (foreign_result as i32);
+    return foreign_result as i32;
   }
 }
 

@@ -15,6 +15,7 @@ pub enum Flags {
   NoLayout = 32
 }
 
+#[repr(C)]
 pub struct Box {
   x1: f32,
   y1: f32,
@@ -22,6 +23,7 @@ pub struct Box {
   y2: f32
 }
 
+#[repr(C)]
 pub struct ActorRef {
   opaque: *mut libc::c_void
 }
@@ -958,6 +960,7 @@ extern {
   fn clutter_actor_add_constraint(self_value: *mut libc::c_void, constraint: *mut libc::c_void);
 }
 
+#[repr(C)]
 pub struct ActorMetaRef {
   opaque: *mut libc::c_void
 }

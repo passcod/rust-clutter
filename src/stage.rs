@@ -2,6 +2,7 @@ use libc;
 use std;
 use super::actor::Actor;
 
+#[repr(C)]
 pub struct StageRef {
   opaque: *mut libc::c_void
 }

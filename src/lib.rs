@@ -15,7 +15,7 @@ pub mod text;
 
 pub fn init() {
   unsafe {
-    clutter_init(std::ptr::mut_null(), std::ptr::mut_null());
+    clutter_init(std::ptr::null_mut(), std::ptr::null_mut());
   }
 }
 
