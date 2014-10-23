@@ -3,6 +3,8 @@ use std;
 use super::actor::Actor;
 use super::actor::ActorMeta;
 
+pub mod bind;
+
 pub struct ConstraintRef {
   opaque: *mut libc::c_void
 }
@@ -22,9 +24,6 @@ impl ActorMeta for ConstraintRef {
   fn as_actor_meta(&self) -> *mut libc::c_void {
     return self.opaque;
   }
-}
-
-extern {
 }
 
 pub struct BindConstraintRef {
@@ -60,17 +59,3 @@ impl Constraint for BindConstraintRef {
 extern {
   fn clutter_bind_constraint_new(source: *mut libc::c_void, coordinate: bind::Coordinate, offset: f32) -> BindConstraintRef;
 }
-
-pub mod bind {
-  #[repr(i32)]
-  pub enum Coordinate {
-    X = 0,
-    Y = 1,
-    Width = 2,
-    Height = 3,
-    Position = 4,
-    Size = 5,
-    All = 6
-  }
-}
-

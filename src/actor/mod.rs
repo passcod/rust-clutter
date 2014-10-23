@@ -4,6 +4,8 @@ use cairo;
 use super::content::Content;
 use super::constraint::Constraint;
 
+pub mod allocation;
+
 #[repr(i32)]
 pub enum Flags {
   Mapped = 2,
@@ -1023,13 +1025,3 @@ impl std::ops::Drop for ActorRef {
 extern {
   fn clutter_actor_destroy(self_value: *mut libc::c_void);
 }
-
-pub mod allocation {
-  #[repr(i32)]
-  pub enum Flags {
-    None = 0,
-    AbsoluteOriginChanged = 2,
-    DelegateLayout = 4
-  }
-}
-
