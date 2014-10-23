@@ -1,0 +1,7 @@
+[package]
+name = "clutter"
+version = "0.0.1"
+authors = ["Félix Saparelli <felix@passcod.name>"]
+
+[dependencies.cairo]
+git = "https://github.com/passcod/rust-cairo.git"
