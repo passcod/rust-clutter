@@ -29,6 +29,7 @@
 //! Sections, no Front-Cover Texts, and no Back-Cover Texts. You may obtain a
 //! copy of the GNU Free Documentation License from the Free Software
 //! Foundation by visiting their Web site or by writing to the address above.
+#![stable]
 
 extern crate cairo;
 extern crate libc;
