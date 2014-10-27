@@ -8,20 +8,45 @@ use super::constraint::Constraint;
 
 pub mod allocation;
 
+/// Flags used to signal the state of an actor.
 #[repr(i32)]
 pub enum Flags {
+  /// The actor will be painted (is visible, and inside a toplevel, and all
+  /// parents visible).
   Mapped = 2,
+
+  /// The resources associated to the actor have been allocated.
   Realized = 4,
+
+  /// The actor 'reacts' to mouse events emmitting event signals.
   Reactive = 8,
+
+  /// The actor has been shown by the application program.
   Visible = 16,
+
+  /// The actor provides an explicit layout management policy for its children;
+  /// this flag will prevent Clutter from automatic queueing of relayout and
+  /// will defer all layouting to the actor itself.
   NoLayout = 32
 }
 
+/// Bounding box of an actor.
+///
+/// The coordinates of the top left and right bottom corners of an actor. The
+/// coordinates of the two points are expressed in pixels with sub-pixel
+/// precision.
 #[repr(C)]
 pub struct Box {
+  /// X coordinate of the top left corner
   x1: f32,
+
+  /// Y coordinate of the top left corner
   y1: f32,
+
+  /// X coordinate of the bottom right corner
   x2: f32,
+
+  /// Y coordinate of the bottom right corner
   y2: f32
 }
 
@@ -47,6 +72,163 @@ impl ActorRef {
 }
 
 /// The basic element of the scene graph.
+///
+/// The Actor is the basic element of the scene graph in Clutter, and it
+/// encapsulates the position, size, and transformations of a node in the
+/// graph.
+///
+/// ## Actor transformations
+///
+/// Each actor can be transformed using methods like `.set_scale()` or
+/// `.set_rotation()`. The order in which the transformations are applied is
+/// decided by Clutter and it is the following:
+///
+/// 1. translation by the origin of the `allocation` property
+/// 2. translation by the actor's `z-position` property
+/// 3. translation by the actor's `pivot-point` property
+/// 4. scaling by the `scale-x` and `scale-y` factors
+/// 5. rotation around the `rotation-angle-x` and `rotation-center-x`
+/// 6. rotation around the `rotation-angle-y` and `rotation-center-y`
+/// 7. rotation around the `rotation-angle-z` and `rotation-center-z`
+/// 8. negative translation by the `anchor-x` and `anchor-y` point
+/// 9. negative translation by the actor's `pivot-point`.
+///
+/// ## Modifying an actor's geometry
+///
+/// Each actor has a bounding box, called `allocation` which is either set by
+/// its parent or explicitly through the `.set_position()` and `.set_size()`
+/// methods. Each actor also has an implicit preferred size.
+///
+/// An actor's position can be set explicitly by using `.set_x()` and
+/// `.set_y()`; the coordinates are relative to the origin of the actor's
+/// parent.
+///
+/// ## Managing actor children
+///
+/// Each actor can have multiple children, by calling `.add_child()` to add a
+/// new child actor, and `.remove_child()` to remove an existing child. Actor
+/// will hold a reference on each child actor, which will be released when the
+/// child is removed from its parent, or destroyed using `.destroy()`.
+///
+/// Children can be inserted at a given index, or above and below another child
+/// actor. The order of insertion determines the order of the children when
+/// iterating over them. Iterating over children is performed by using
+/// `.get_first_child()`, `.get_previous_sibling()`, `.get_next_sibling()`, and
+/// `.get_last_child()`. It is also possible to retrieve a list of children by
+/// using `.get_children()`, as well as retrieving a specific child at a given
+/// index by using `.get_child_at_index()`.
+///
+/// If you need to track additions of children to an Actor, use the
+/// `actor-added` signal; similarly, to track removals of children from an
+/// Actor, use the `actor-removed` signal.
+///
+/// ## Painting an actor
+///
+/// There are three ways to paint an actor:
+///
+/// - set a delegate Content as the value for the `content` property of the
+///   actor
+/// - subclass Actor and override the `ActorClass.paint_node()` virtual method
+///   (FIXME: Rust equivalent?)
+/// - subclass Actor and override the `ActorClass.paint()` virtual method
+///   (FIXME: Rust equivalent?)
+///
+/// A Content is a delegate object that takes over the painting operations of
+/// one or more actors. The Content painting will be performed on top of the
+/// `background-color` of the actor, and before calling the actor's own
+/// implementation of the `ActorClass.paint_node()` virtual method.
+///
+/// The `ActorClass.paint_node()` virtual method is invoked whenever an actor
+/// needs to be painted. The implementation of the virtual function must only
+/// paint the contents of the actor itself, and not the contents of its
+/// children, if the actor has any.
+///
+/// The PaintNode passed to the virtual method is the local root of the render
+/// tree; any node added to it will be rendered at the correct position, as
+/// defined by the actor's `allocation`.
+///
+/// ## Handling events on an actor
+///
+/// An Actor can receive and handle input device events, for instance pointer
+/// events and key events, as long as its `reactive` property is set to
+/// __true__.
+///
+/// Once an actor has been determined to be the source of an event, Clutter
+/// will traverse the scene graph from the top-level actor towards the event
+/// source, emitting the `captured-event` signal on each ancestor until it
+/// reaches the source; this phase is also called the `capture` phase. If the
+/// event propagation was not stopped, the graph is walked backwards, from the
+/// source actor to the top-level, and the `event` signal is emitted, alongside
+/// eventual event-specific signals like `button-press-event` or `motion-event`;
+/// this phase is also called the `bubble` phase.
+///
+/// At any point of the signal emission, signal handlers can stop the propagation
+/// through the scene graph by returning CLUTTER_EVENT_STOP; otherwise, they can
+/// continue the propagation by returning CLUTTER_EVENT_PROPAGATE.
+///
+/// ## Animation
+///
+/// Animation is a core concept of modern user interfaces; Clutter provides a
+/// complete and powerful animation framework that automatically tweens the
+/// actor's state without requiring direct, frame by frame manipulation from
+/// your application code. You have two models at your disposal:
+///
+/// - an implicit animation model
+/// - an explicit animation model
+///
+/// The implicit animation model of Clutter assumes that all the changes in an
+/// actor state should be gradual and asynchronous; Clutter will automatically
+/// transition an actor's property change between the current state and the
+/// desired one without manual intervention, if the property is defined to be
+/// animatable in its documentation.
+///
+/// By default, in the 1.0 API series, the transition happens with a duration of
+/// zero milliseconds, and the implicit animation is an opt in feature to retain
+/// backwards compatibility.
+///
+/// Implicit animations depend on the current easing state; in order to use the
+/// default easing state for an actor you should call `.save_easing_state()`.
+///
+/// Implicit animations use a default duration of 250 milliseconds, and a
+/// default easing mode of CLUTTER_EASE_OUT_CUBIC, unless you call
+/// `.set_easing_mode()` and `.set_easing_duration()` after changing the easing
+/// state of the actor.
+///
+/// It is possible to animate multiple properties of an actor at the same time,
+/// and you can animate multiple actors at the same time as well.
+///
+/// Changing the easing state will affect all the following property
+/// transitions, but will not affect existing transitions.
+///
+/// It is important to note that if you modify the state on an animatable
+/// property while a transition is in flight, the transition's final value will
+/// be updated, as well as its duration and progress mode by using the current
+/// easing state.
+///
+/// It is possible to receive a notification of the completion of an implicit
+/// transition by using the `transition-stopped` signal, decorated with the
+/// name of the property. In case you want to know when all the currently in
+/// flight transitions are complete, use the `transitions-completed` signal
+/// instead.
+///
+/// It is possible to retrieve the Transition used by the animatable properties
+/// by using `.get_transition()` and using the property name as the transition
+/// name.
+///
+/// The explicit animation model supported by Clutter requires that you create
+/// a Transition object, and optionally set the initial and final values. The
+/// transition will not start unless you add it to the Actor.
+///
+/// The explicit animation API applies to all GObject properties, as well as
+/// the custom properties defined through the Animatable interface, regardless
+/// of whether they are defined as implicitly animatable or not.
+///
+/// The explicit animation API should also be used when using custom animatable
+/// properties for Action, Constraint, and Effect instances associated to an
+/// actor.
+///
+/// Finally, explicit animations are useful for creating animations that run
+/// continuously.
 pub trait Actor {
   /// Returns a pointer to the the underlying C object.
   ///
