@@ -1,4 +1,11 @@
 language: rust
+env:
+  global:
+    - secure: jV5QybF09mjyJUn+XEnmdEoBlCok3avf/Fq4dG1BJBYhhkdOnx3p7voTIhL8D388441tTTjenoJUZztlm+YS28CZc4mN5fiCSeajER0j3HzSU/lsf+1N5Vr36zlot0OSlGf6ic3ZQc/154XTxVEUw7NTiUePnEet52Sx/jPEUI8=
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y libclutter-1.0-dev
+after_script:
+  - cargo doc
+  - mv target/doc doc
+  - curl http://www.rust-ci.org/artifacts/put?t=$RUSTCI_TOKEN | sh
