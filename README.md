@@ -12,9 +12,13 @@ places, and altered in some places to fit with the way Rust works (e.g. no NULL
 pointers!), and the `rustdoc`-generated files should be all one needs to create
 an application using Clutter.
 
+Due to the source of these bindings, however, there is a portion of the Clutter
+API which isn't available. It is functional and useable nonetheless, and Pull
+Requests are very welcome!
+
 Stability levels are also taken from the upstream documentation and applied with
-`#[stable]` and `#[deprecated]` tags. The binding is set as stable globally, so
-reading through the code, one should assume that unmarked methods are stable.
+`#[stable]`, `#[deprecated]`, etc tags. The binding is set as stable globally,
+so reading through the code, one should assume that unmarked methods are stable.
 
 The version number in `Cargo.toml` track the upstream version number. The
 version of the bindings can only be tracked with git SHA-1s at the moment.
