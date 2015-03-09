@@ -263,7 +263,7 @@ pub trait Stage {
   /// _Since 0.4_
   fn set_title(&mut self, title: &str) {
     unsafe {
-      use std::c_str::ToCStr;
+      use std::ffi::CString;
       clutter_stage_set_title(self.as_stage(), title.to_c_str().unwrap() as *mut i8);
     }
   }
@@ -403,34 +403,34 @@ pub trait Stage {
   }
 
   //FIXME: doc
-  fn on_activate(&mut self, handler: &|&mut StageRef|) -> u64 {
+  fn on_activate(&mut self, handler: &Fn(&mut StageRef)->()) -> u64 {
     unsafe {
       let null_void: *mut libc::c_void = std::ptr::null_mut();
-      return rsi_connect_on_activate(self.as_stage(), "activate".to_c_str().unwrap() as *mut i8, handler_for_on_activate, std::mem::transmute::<&|&mut StageRef|, *mut libc::c_void>(handler), null_void, 0);
+      return rsi_connect_on_activate(self.as_stage(), "activate".to_c_str().unwrap() as *mut i8, handler_for_on_activate, std::mem::transmute::<&Fn(&mut StageRef)->(), *mut libc::c_void>(handler), null_void, 0);
     }
   }
 
   //FIXME: doc
-  fn on_deactivate(&mut self, handler: &|&mut StageRef|) -> u64 {
+  fn on_deactivate(&mut self, handler: &Fn(&mut StageRef)->()) -> u64 {
     unsafe {
       let null_void: *mut libc::c_void = std::ptr::null_mut();
-      return rsi_connect_on_deactivate(self.as_stage(), "deactivate".to_c_str().unwrap() as *mut i8, handler_for_on_deactivate, std::mem::transmute::<&|&mut StageRef|, *mut libc::c_void>(handler), null_void, 0);
+      return rsi_connect_on_deactivate(self.as_stage(), "deactivate".to_c_str().unwrap() as *mut i8, handler_for_on_deactivate, std::mem::transmute::<&Fn(&mut StageRef)->(), *mut libc::c_void>(handler), null_void, 0);
     }
   }
 
   //FIXME: doc
-  fn on_fullscreen(&mut self, handler: &|&mut StageRef|) -> u64 {
+  fn on_fullscreen(&mut self, handler: &Fn(&mut StageRef)->()) -> u64 {
     unsafe {
       let null_void: *mut libc::c_void = std::ptr::null_mut();
-      return rsi_connect_on_fullscreen(self.as_stage(), "fullscreen".to_c_str().unwrap() as *mut i8, handler_for_on_fullscreen, std::mem::transmute::<&|&mut StageRef|, *mut libc::c_void>(handler), null_void, 0);
+      return rsi_connect_on_fullscreen(self.as_stage(), "fullscreen".to_c_str().unwrap() as *mut i8, handler_for_on_fullscreen, std::mem::transmute::<&Fn(&mut StageRef)->(), *mut libc::c_void>(handler), null_void, 0);
     }
   }
 
   //FIXME: doc
-  fn on_unfullscreen(&mut self, handler: &|&mut StageRef|) -> u64 {
+  fn on_unfullscreen(&mut self, handler: &Fn(&mut StageRef)->()) -> u64 {
     unsafe {
       let null_void: *mut libc::c_void = std::ptr::null_mut();
-      return rsi_connect_on_unfullscreen(self.as_stage(), "unfullscreen".to_c_str().unwrap() as *mut i8, handler_for_on_unfullscreen, std::mem::transmute::<&|&mut StageRef|, *mut libc::c_void>(handler), null_void, 0);
+      return rsi_connect_on_unfullscreen(self.as_stage(), "unfullscreen".to_c_str().unwrap() as *mut i8, handler_for_on_unfullscreen, std::mem::transmute::<&Fn(&mut StageRef)->(), *mut libc::c_void>(handler), null_void, 0);
     }
   }
 }
@@ -451,7 +451,7 @@ impl Actor for StageRef {
 extern "C" fn handler_for_on_activate(stage: *mut libc::c_void, handler: *mut libc::c_void) {
   unsafe {
     let mut stage_r = StageRef { opaque: stage };
-    let handler = std::mem::transmute::<*mut libc::c_void, &mut |stage: &mut StageRef|>(handler);
+    let handler = std::mem::transmute::<*mut libc::c_void, &mut FnMut(&mut StageRef)>(handler);
     (*handler)(&mut stage_r);
     std::mem::forget(stage_r);
   }
@@ -461,7 +461,7 @@ extern "C" fn handler_for_on_activate(stage: *mut libc::c_void, handler: *mut li
 extern "C" fn handler_for_on_deactivate(stage: *mut libc::c_void, handler: *mut libc::c_void) {
   unsafe {
     let mut stage_r = StageRef { opaque: stage };
-    let handler = std::mem::transmute::<*mut libc::c_void, &mut |stage: &mut StageRef|>(handler);
+    let handler = std::mem::transmute::<*mut libc::c_void, &mut FnMut(&mut StageRef)>(handler); 
     (*handler)(&mut stage_r);
     std::mem::forget(stage_r);
   }
@@ -471,7 +471,7 @@ extern "C" fn handler_for_on_deactivate(stage: *mut libc::c_void, handler: *mut 
 extern "C" fn handler_for_on_fullscreen(stage: *mut libc::c_void, handler: *mut libc::c_void) {
   unsafe {
     let mut stage_r = StageRef { opaque: stage };
-    let handler = std::mem::transmute::<*mut libc::c_void, &mut |stage: &mut StageRef|>(handler);
+    let handler = std::mem::transmute::<*mut libc::c_void, &mut FnMut(&mut StageRef)>(handler);
     (*handler)(&mut stage_r);
     std::mem::forget(stage_r);
   }
@@ -481,7 +481,7 @@ extern "C" fn handler_for_on_fullscreen(stage: *mut libc::c_void, handler: *mut 
 extern "C" fn handler_for_on_unfullscreen(stage: *mut libc::c_void, handler: *mut libc::c_void) {
   unsafe {
     let mut stage_r = StageRef { opaque: stage };
-    let handler = std::mem::transmute::<*mut libc::c_void, &mut |stage: &mut StageRef|>(handler);
+    let handler = std::mem::transmute::<*mut libc::c_void, &mut FnMut(&mut StageRef)>(handler);
     (*handler)(&mut stage_r);
     std::mem::forget(stage_r);
   }

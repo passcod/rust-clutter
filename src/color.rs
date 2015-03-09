@@ -173,7 +173,7 @@ impl Color {
   /// _Since 1.0_
   pub fn from_string(&mut self, name: &str) -> bool {
     unsafe {
-      use std::c_str::ToCStr;
+      use std::ffi::CString;
       let foreign_result = clutter_color_from_string(self.opaque, name.to_c_str().unwrap() as *mut i8);
       return foreign_result != 0;
     }

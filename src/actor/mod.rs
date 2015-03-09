@@ -272,7 +272,7 @@ pub trait Actor {
   /// The name can be used to identify a Clutter Actor.
   fn set_name(&mut self, name: &str) {
     unsafe {
-      use std::c_str::ToCStr;
+      use std::ffi::CString;
       clutter_actor_set_name(self.as_actor(), name.to_c_str().unwrap() as *mut i8);
     }
   }
@@ -1793,18 +1793,18 @@ pub trait Actor {
   }
 
   //FIXME doc
-  fn on_allocation_changed(&mut self, handler: &|&mut ActorRef, &Box, allocation::Flags|) -> u64 {
+  fn on_allocation_changed(&mut self, handler: &mut ActorRef, &Box, allocation::Flags) -> u64 {
     unsafe {
       let null_void: *mut libc::c_void = std::ptr::null_mut();
-      return rsi_connect_on_allocation_changed(self.as_actor(), "allocation_changed".to_c_str().unwrap() as *mut i8, handler_for_on_allocation_changed, std::mem::transmute::<&|&mut ActorRef, &Box, allocation::Flags|, *mut libc::c_void>(handler), null_void, 0);
+      return rsi_connect_on_allocation_changed(self.as_actor(), "allocation_changed".to_c_str().unwrap() as *mut i8, handler_for_on_allocation_changed, std::mem::transmute::<&&mut ActorRef, &Box, allocation::Flags, *mut libc::c_void>(handler), null_void, 0);
     }
   }
 
   //FIXME doc
-  fn on_destroy(&mut self, handler: &|&mut ActorRef|) -> u64 {
+  fn on_destroy(&mut self, handler: &&mut ActorRef) -> u64 {
     unsafe {
       let null_void: *mut libc::c_void = std::ptr::null_mut();
-      return rsi_connect_on_destroy(self.as_actor(), "destroy".to_c_str().unwrap() as *mut i8, handler_for_on_destroy, std::mem::transmute::<&|&mut ActorRef|, *mut libc::c_void>(handler), null_void, 0);
+      return rsi_connect_on_destroy(self.as_actor(), "destroy".to_c_str().unwrap() as *mut i8, handler_for_on_destroy, std::mem::transmute::<&&mut ActorRef, *mut libc::c_void>(handler), null_void, 0);
     }
   }
 }
@@ -1819,7 +1819,7 @@ impl Actor for ActorRef {
 extern "C" fn handler_for_on_allocation_changed(actor: *mut libc::c_void, allocation_box: *mut Box, flags: allocation::Flags, handler: *mut libc::c_void) {
   unsafe {
     let mut actor_r = ActorRef { opaque: actor };
-    let handler = std::mem::transmute::<*mut libc::c_void, &mut |actor: &mut ActorRef, allocation_box: &Box, flags: allocation::Flags|>(handler);
+    let handler = std::mem::transmute::<*mut libc::c_void, &mut FnMut(&mut ActorRef, &Box,  allocation::Flags)>(handler);
     (*handler)(&mut actor_r, std::mem::transmute(allocation_box), flags);
     std::mem::forget(actor_r);
   }
@@ -1829,7 +1829,7 @@ extern "C" fn handler_for_on_allocation_changed(actor: *mut libc::c_void, alloca
 extern "C" fn handler_for_on_destroy(actor: *mut libc::c_void, handler: *mut libc::c_void) {
   unsafe {
     let mut actor_r = ActorRef { opaque: actor };
-    let handler = std::mem::transmute::<*mut libc::c_void, &mut |actor: &mut ActorRef|>(handler);
+    let handler = std::mem::transmute::<*mut libc::c_void, &mut FnMut(&mut ActorRef)>(handler);
     (*handler)(&mut actor_r);
     std::mem::forget(actor_r);
   }
@@ -1986,7 +1986,7 @@ pub trait ActorMeta {
   /// _Since 1.4_
   fn set_name(&mut self, name: &str) {
     unsafe {
-      use std::c_str::ToCStr;
+      use std::ffi::CString;
       clutter_actor_meta_set_name(self.as_actor_meta(), name.to_c_str().unwrap() as *mut i8);
     }
   }

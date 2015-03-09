@@ -61,10 +61,10 @@ pub trait Canvas {
   }
 
   //FIXME: doc
-  fn on_draw(&mut self, handler: &|&mut CanvasRef, &mut cairo::Cairo, i32, i32| -> bool) -> u64 {
+  fn on_draw(&mut self, handler: &FnShare(&mut CanvasRef, &mut cairo::Cairo, i32, i32) -> bool) -> u64 {
     unsafe {
       let null_void: *mut libc::c_void = std::ptr::null_mut();
-      return rsi_connect_on_draw(self.as_canvas(), "draw".to_c_str().unwrap() as *mut i8, handler_for_on_draw, std::mem::transmute::<&|&mut CanvasRef, &mut cairo::Cairo, i32, i32| -> bool, *mut libc::c_void>(handler), null_void, 0);
+      return rsi_connect_on_draw(self.as_canvas(), "draw".to_c_str().unwrap() as *mut i8, handler_for_on_draw, std::mem::transmute::<&FnMut(&mut CanvasRef, &mut cairo::Cairo, i32, i32) -> bool, *mut libc::c_void>(handler), null_void, 0);
     }
   }
 }
@@ -86,7 +86,7 @@ extern "C" fn handler_for_on_draw(canvas: *mut libc::c_void, cairo: *mut libc::c
   unsafe {
     let mut canvas_r = CanvasRef { opaque: canvas };
     let mut cairo_r = cairo::Cairo { opaque: cairo };
-    let handler = std::mem::transmute::<*mut libc::c_void, &mut |canvas: &mut CanvasRef, cairo: &mut cairo::Cairo, width: i32, height: i32| -> bool>(handler);
+    let handler = std::mem::transmute::<*mut libc::c_void, &FnMut(&mut CanvasRef, &mut cairo::Cairo, i32, i32) -> bool>(handler);
     let foreign_result = (*handler)(&mut canvas_r, &mut cairo_r, width, height);
     std::mem::forget(canvas_r);
     std::mem::forget(cairo_r);

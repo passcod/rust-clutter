@@ -35,7 +35,7 @@ impl TextRef {
   /// _Since 1.0_
   pub fn new_full(font_name: &str, text: &str, color: super::color::Color) -> TextRef {
     unsafe {
-      use std::c_str::ToCStr;
+      use std::ffi::CString;
       let foreign_result = clutter_text_new_full(font_name.to_c_str().unwrap() as *mut i8, text.to_c_str().unwrap() as *mut i8, color);
       return foreign_result;
     }
@@ -51,7 +51,7 @@ impl TextRef {
   /// _Since 1.0_
   pub fn new_with_text(font_name: &str, text: &str) -> TextRef {
     unsafe {
-      use std::c_str::ToCStr;
+      use std::ffi::CString;
       let foreign_result = clutter_text_new_with_text(font_name.to_c_str().unwrap() as *mut i8, text.to_c_str().unwrap() as *mut i8);
       return foreign_result;
     }
@@ -117,7 +117,7 @@ pub trait Text {
   /// _Since 1.0_
   fn set_font_name(&mut self, text: &str) {
     unsafe {
-      use std::c_str::ToCStr;
+      use std::ffi::CString;
       clutter_text_set_font_name(self.as_text(), text.to_c_str().unwrap() as *mut i8);
     }
   }
@@ -316,7 +316,7 @@ impl BufferRef {
   /// _Since 1.10_
   pub fn new_with_text(text: &str) -> BufferRef {
     unsafe {
-      use std::c_str::ToCStr;
+      use std::ffi::CString;
       let foreign_result = clutter_text_buffer_new_with_text(text.to_c_str().unwrap() as *mut i8, -1);
       return foreign_result;
     }
@@ -346,7 +346,7 @@ pub trait Buffer {
   /// _Since 1.10_
   fn set_text(&mut self, text: &str) {
     unsafe {
-      use std::c_str::ToCStr;
+      use std::ffi::CString;
       clutter_text_buffer_set_text(self.as_buffer(), text.to_c_str().unwrap() as *mut i8, -1);
     }
   }
@@ -418,7 +418,7 @@ pub trait Buffer {
   /// _Since 1.10_
   fn insert_text(&mut self, position: i32, chars: &str) -> i32 {
     unsafe {
-      use std::c_str::ToCStr;
+      use std::ffi::CString;
       let foreign_result = clutter_text_buffer_insert_text(self.as_buffer(), position, chars.to_c_str().unwrap() as *mut i8, -1);
       return foreign_result;
     }
@@ -449,7 +449,7 @@ pub trait Buffer {
   /// _Since 1.10_
   fn emit_inserted_text(&mut self, position: i32, chars: &str) -> i32 {
     unsafe {
-      use std::c_str::ToCStr;
+      use std::ffi::CString;
       let foreign_result = clutter_text_buffer_emit_inserted_text(self.as_buffer(), position, chars.to_c_str().unwrap() as *mut i8, -1);
       return foreign_result;
     }
