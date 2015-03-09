@@ -182,10 +182,10 @@ impl Color {
   /// Returns a textual specification of color in the hexadecimal form `#rrggbbaa`
   ///
   /// _Since 0.2_
-  pub fn to_string(&self) -> std::c_str::CString {
+  pub fn to_string(&self) -> std::ffi::CString {
     unsafe {
       let foreign_result = clutter_color_to_string(self.opaque as *mut libc::c_void);
-      return std::c_str::CString::new(foreign_result as *const i8, false);
+      return std::ffi::CString::new(foreign_result as *const i8, false);
     }
   }
 

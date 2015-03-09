@@ -125,10 +125,10 @@ pub trait Text {
   /// Retrieves the font name as set by `.set_font_name()`.
   ///
   /// _Since 1.0_
-  fn get_font_name(&mut self) -> std::c_str::CString {
+  fn get_font_name(&mut self) -> std::ffi::CString {
     unsafe {
       let foreign_result = clutter_text_get_font_name(self.as_text());
-      return std::c_str::CString::new(foreign_result as *const i8, false);
+      return std::ffi::CString::new(foreign_result as *const i8, false);
     }
   }
 
@@ -357,10 +357,10 @@ pub trait Buffer {
   /// object emits a signal, or is finalized.
   ///
   /// _Since 1.10_
-  fn get_text(&mut self) -> std::c_str::CString {
+  fn get_text(&mut self) -> std::ffi::CString {
     unsafe {
       let foreign_result = clutter_text_buffer_get_text(self.as_buffer());
-      return std::c_str::CString::new(foreign_result as *const i8, false);
+      return std::ffi::CString::new(foreign_result as *const i8, false);
     }
   }
 

@@ -271,10 +271,10 @@ pub trait Stage {
   /// Gets the stage title.
   ///
   /// _Since 0.4_
-  fn get_title(&mut self) -> std::c_str::CString {
+  fn get_title(&mut self) -> std::ffi::CString {
     unsafe {
       let foreign_result = clutter_stage_get_title(self.as_stage());
-      return std::c_str::CString::new(foreign_result as *const i8, false);
+      return std::ffi::CString::new(foreign_result as *const i8, false);
     }
   }
 

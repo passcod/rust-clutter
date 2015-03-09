@@ -61,7 +61,7 @@ pub trait Canvas {
   }
 
   //FIXME: doc
-  fn on_draw(&mut self, handler: &FnShare(&mut CanvasRef, &mut cairo::Cairo, i32, i32) -> bool) -> u64 {
+  fn on_draw(&mut self, handler: &Fn(&mut CanvasRef, &mut cairo::Cairo, i32, i32) -> bool) -> u64 {
     unsafe {
       let null_void: *mut libc::c_void = std::ptr::null_mut();
       return rsi_connect_on_draw(self.as_canvas(), "draw".to_c_str().unwrap() as *mut i8, handler_for_on_draw, std::mem::transmute::<&FnMut(&mut CanvasRef, &mut cairo::Cairo, i32, i32) -> bool, *mut libc::c_void>(handler), null_void, 0);
